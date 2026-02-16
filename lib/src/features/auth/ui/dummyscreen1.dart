@@ -12,8 +12,9 @@ class Dummyscreen1 extends StatelessWidget {
             height: 50,
             width: 100,
             color: Colors.red,
-            child: Text("testiiiiiiiii"),
+            child: Text("Bisini"),
           ),
+          Text("bisssss"),
         ],
       ),
     );
