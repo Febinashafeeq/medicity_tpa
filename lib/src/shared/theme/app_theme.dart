@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
 
-  static const Color primaryGold = Color(0xFF0B833D); // A subtle gold hint
+  static const Color primaryGold = Color(0xFF0B833D);
   static const Color surfaceWhite = Color(0xFFF8F9FA);
   static const Color textDark = Color(0xFF212529);
 
@@ -29,7 +29,6 @@ class AppTheme {
         ),
       ),
 
-      // Web-style Input Decoration
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
@@ -43,7 +42,6 @@ class AppTheme {
         ),
       ),
 
-      // Card style for Japandi/Modern look
       cardTheme: CardThemeData(
         elevation: 0.5,
         shape: RoundedRectangleBorder(
