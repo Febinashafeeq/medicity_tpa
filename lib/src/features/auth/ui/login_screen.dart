@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import '../providers/authclass.dart';
 
 
 
@@ -21,7 +22,64 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey       = GlobalKey<FormState>();
   final _emailCtrl     = TextEditingController();
   final _passwordCtrl  = TextEditingController();
+  final adminAuth = AdminAuthService();
 
+  Future<void> _onSignInss() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      setState(() => _isLoading = true);
+
+      await adminAuth.signInAdmin(
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text.trim(),
+      );
+      if (mounted) {
+        setState(() => _isLoading = false);
+        // Navigate to dashboard on success
+        context.go('/dashboard');
+      }
+
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = e.toString().replaceAll('Exception:', '');
+      });
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  Future<void> _onSignIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      setState(() => _isLoading = true);
+
+      await adminAuth.signInAdmin(
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text.trim(),
+      );
+
+      if (!mounted) return;
+      context.go('/dashboard');
+
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceAll('Exception:', '').trim(),
+          ),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   bool _obscurePassword   = true;
   bool _isLoading         = false;
@@ -35,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _onSignIn() async {
+  void _onSignIns() async {
     setState(() { _hasError = false; _errorMessage = ''; });
 
     if (!_formKey.currentState!.validate()) return;
