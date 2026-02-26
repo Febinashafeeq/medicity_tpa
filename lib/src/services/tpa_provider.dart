@@ -198,25 +198,79 @@ class TpaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addCompany({
+  Future<void> addCompany({
     required String tpaId,
     required String name,
     required String policyType,
     required String empanelmentNo,
     required String contactPerson,
     required String phone,
-  }) {
-    _companies = [
-      ..._companies,
+  }) async {
+    final String key = DateTime.now().microsecondsSinceEpoch.toString();
+
+    await FirebaseFirestore.instance.collection('companies').doc(key).set({
+      'id': key,
+      'tpaId': tpaId,
+      'name': name,
+      'policyType': policyType,
+      'empanelmentNo': empanelmentNo,
+      'contactPerson': contactPerson,
+      'phone': phone,
+      'isActive': true,
+      'patientCount': 0,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    _companies.insert(
+      0,
       InsuranceCompanyModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        tpaId: tpaId, name: name, policyType: policyType,
-        empanelmentNo: empanelmentNo, contactPerson: contactPerson,
-        phone: phone, isActive: true, patientCount: 0,
+        id: key,
+        tpaId: tpaId,
+        name: name,
+        policyType: policyType,
+        empanelmentNo: empanelmentNo,
+        contactPerson: contactPerson,
+        phone: phone,
+        isActive: true,
+        patientCount: 0,
       ),
-    ];
+    );
+
     _showAddCompany = false;
     notifyListeners();
+  }
+  Future<void> fetchCompanies({String? tpaId}) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      Query query = db.collection('companies');
+
+      // optional filter by TPA
+      if (tpaId != null) {
+        query = query.where('tpaId', isEqualTo: tpaId);
+      }
+
+      final snapshot = await query.get();
+
+      _companies = snapshot.docs
+          .map((doc) =>
+          InsuranceCompanyModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('fetchCompanies error: $e');
+    }
+
+
+    isLoading = false;
+    notifyListeners();
+  }
+  InsuranceCompanyModel? getCompanyById(String id) {
+    try {
+      return _companies.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 
   // ── Patient Actions ───────────────────────────────────────────────────────

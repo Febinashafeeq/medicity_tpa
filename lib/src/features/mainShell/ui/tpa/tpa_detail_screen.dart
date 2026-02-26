@@ -12,6 +12,9 @@ class TpaDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TpaProvider>().fetchCompanies(tpaId: tpaId);
+    });
     return _TpaDetailView(tpaId: tpaId);
   }
 }

@@ -68,8 +68,36 @@ class InsuranceCompanyModel {
     required this.isActive,
     required this.patientCount,
   });
-}
 
+  factory InsuranceCompanyModel.fromMap(
+      String id,
+      Map<String, dynamic> map,
+      ) {
+    return InsuranceCompanyModel(
+      id:             map['id']             ?? id,
+      tpaId:          map['tpaId']          ?? '',
+      name:           map['name']           ?? '',
+      policyType:     map['policyType']     ?? '',
+      empanelmentNo:  map['empanelmentNo']  ?? '',
+      contactPerson:  map['contactPerson']  ?? '',
+      phone:          map['phone']          ?? '',
+      isActive:       map['isActive']       ?? true,
+      patientCount:   map['patientCount']   ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'id':            id,
+    'tpaId':         tpaId,
+    'name':          name,
+    'policyType':    policyType,
+    'empanelmentNo': empanelmentNo,
+    'contactPerson': contactPerson,
+    'phone':         phone,
+    'isActive':      isActive,
+    'patientCount':  patientCount,
+  };
+}
 // ── Patient Model ─────────────────────────────────────────────────────────────
 class PatientModel {
   final String id;
