@@ -298,6 +298,7 @@ class _AddPatientFormState extends State<_AddPatientForm> {
   final _phoneCtrl  = TextEditingController();
   final _addrCtrl   = TextEditingController();
   String _gender = 'Male';
+  String _visitType  = 'Home';
 
   @override
   void dispose() {
@@ -353,6 +354,57 @@ class _AddPatientFormState extends State<_AddPatientForm> {
                   ),
                 ),
               ]),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Visit Type',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF212529),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  StatefulBuilder(
+                    builder: (_, setVisitType) => Row(
+                      children: ['Home', 'Centre'].map((type) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InkWell(
+                          onTap: () => setVisitType(() => _visitType = type),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: _visitType == type
+                                  ? const Color(0xFF0B833D)
+                                  : const Color(0xFFF8F9FA),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: _visitType == type
+                                    ? const Color(0xFF0B833D)
+                                    : const Color(0xFFE9ECEF),
+                              ),
+                            ),
+                            child: Text(
+                              type,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _visitType == type
+                                    ? Colors.white
+                                    : const Color(0xFF495057),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )).toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
             _field('Policy Number *', _policyCtrl, 'POL001'),
             _field('Card Number', _cardCtrl, 'CRD001'),
