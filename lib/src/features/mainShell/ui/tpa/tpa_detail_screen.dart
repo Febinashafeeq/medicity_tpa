@@ -12,6 +12,9 @@ class TpaDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TpaProvider>().fetchTpas();
+    });
     return _TpaDetailView(tpaId: tpaId);
   }
 }
@@ -23,6 +26,14 @@ class _TpaDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tpa = context.watch<TpaProvider>().tpaById(tpaId);
+
+    if (tpa == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF0B833D)),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),

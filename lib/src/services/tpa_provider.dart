@@ -74,8 +74,14 @@ class TpaProvider extends ChangeNotifier {
   }
 
   // ── Single Item Getters ───────────────────────────────────────────────────
-  TpaModel tpaById(String id) =>
-      _tpas.firstWhere((t) => t.id == id, orElse: () => _tpas.first);
+// In TpaProvider
+  TpaModel? tpaById(String id) {
+    try {
+      return _tpas.firstWhere((t) => t.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
 
   InsuranceCompanyModel companyById(String id) =>
       _companies.firstWhere((c) => c.id == id, orElse: () => _companies.first);
