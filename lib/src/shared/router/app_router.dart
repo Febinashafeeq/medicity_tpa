@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/providers/globalClass.dart';
 import '../../features/auth/ui/login_screen.dart';
 import '../../features/auth/ui/splash_screen.dart';
 import '../../features/mainShell/ui/collections/collection_add_screen.dart';
@@ -18,7 +20,7 @@ import '../../features/mainShell/ui/reports/reports_screen.dart';
 import '../../features/mainShell/ui/tpa/tpa_detail_screen.dart';
 import '../../features/mainShell/ui/tpa/tpa_list_screen.dart';
 import '../widgets/main_shell.dart';
-
+import 'package:go_router/go_router.dart';
 
 // ── Route name constants ─────────────────────────────────────────────────────
 class AppRoutes {
@@ -46,11 +48,25 @@ class AppRoutes {
 
 
 }
+class AuthService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  User? get currentUser => _auth.currentUser;
+
+  Stream<User?> authChanges() => _auth.authStateChanges();
+}
+
+final authService = AuthService();
 
 // ── Router ───────────────────────────────────────────────────────────────────
 final appRouter = GoRouter(
   initialLocation: AppRoutes.splash,
   debugLogDiagnostics: true,
+  refreshListenable:
+  GoRouterRefreshNotifier(authService.authChanges()),
+
+
+
   redirect: _globalRedirect,
   routes: [
 
@@ -297,10 +313,26 @@ final appRouter = GoRouter(
 
 // ── Global Auth Redirect ─────────────────────────────────────────────────────
 String? _globalRedirect(BuildContext context, GoRouterState state) {
-  // TODO: Replace with real auth check when backend is ready
-  return null;
-}
+  final user = authService.currentUser;
 
+  final location = state.matchedLocation;
+  final isLogin = location == AppRoutes.login;
+  final isSplash = location == AppRoutes.splash;
+
+
+  // 🔴 Not logged in
+  if (user == null) {
+    // allow login & splash only
+    return (isLogin || isSplash) ? null : AppRoutes.login;
+  }
+
+  // 🟢 Logged in
+  if (isLogin || isSplash) {
+    return AppRoutes.dashboard;
+  }
+
+  return null; // no redirect
+}
 // ── Fade Transition Helper ───────────────────────────────────────────────────
 CustomTransitionPage<void> _fadePage({
   required GoRouterState state,

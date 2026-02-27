@@ -12,7 +12,12 @@ import '../../models/models.dart';
 class PatientListScreen extends StatelessWidget {
   final String tpaId;
   final String companyId;
-  const PatientListScreen({super.key, required this.tpaId, required this.companyId});
+
+  const PatientListScreen({
+    super.key,
+    required this.tpaId,
+    required this.companyId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +27,23 @@ class PatientListScreen extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InsuranceProvider()),
         ChangeNotifierProvider(create: (_) => TpaProvider()),
       ],
-      child: _PatientListView(tpaId: tpaId, companyId: companyId),
+      child: Builder(
+        builder: (context) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<TpaProvider>().fetchTpas();
+            context.read<TpaProvider>().fetchCompanies(tpaId: tpaId);
+            // context.read<PatientProvider>().fetchPatients(companyId: companyId);
+          });
+
+          return _PatientListView(
+            tpaId: tpaId,
+            companyId: companyId,
+          );
+        },
+      ),
     );
   }
 }
-
 class _PatientListView extends StatelessWidget {
   final String tpaId;
   final String companyId;
@@ -61,7 +78,7 @@ class _TopBar extends StatelessWidget {
     final insProvider   = context.read<InsuranceProvider>();
     final patProvider   = context.read<PatientProvider>();
     final tpa = tpaProvider.tpaById(tpaId);
-    final company       = insProvider.getCompanyById(companyId);
+    final company       = tpaProvider.getCompanyById(companyId);
 
     return Container(
       height: 60,

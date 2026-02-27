@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../services/tpa_provider.dart';
 import '../router/app_router.dart';
 import '../theme/app_colors.dart';
@@ -120,7 +123,6 @@ class _Sidebar extends StatelessWidget {
 // ── Logo ─────────────────────────────────────────────────────────────────────
 class _SidebarLogo extends StatelessWidget {
   const _SidebarLogo();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -272,53 +274,88 @@ class _SidebarFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.border, width: 1))),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-        decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(10)),
-        child: Row(children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.primary,
-            child: Text('A',
-                style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+    return SizedBox(
+      height: 90,
+      child: FutureBuilder<SharedPreferences>(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+
+          // ⏳ Loading
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const SizedBox(
+              height: 60,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            );
+          }
+
+          // ❌ Error or no data
+          if (!snapshot.hasData) {
+            return const SizedBox();
+          }
+
+          final prefs = snapshot.data!;
+          final name  = prefs.getString('adminName') ?? 'Admin';
+          final email = prefs.getString('adminEmail') ?? '';
+
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(color: AppColors.border)),
+            ),
+            child: Row(
               children: [
-                Text('TPA Admin',
-                    style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDark)),
-                Text('Admin Name',
-                    style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textLight)),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : 'A',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        email,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded, size: 16),
+                  tooltip: 'Logout',
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    await prefs.clear();
+                    context.go(AppRoutes.login);
+                  },
+                ),
               ],
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, size: 16, color: AppColors.textLight),
-            onPressed: () => context.go(AppRoutes.login),
-            tooltip: 'Logout',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-        ]),
+          );
+        },
       ),
     );
   }
+}
+Future<void> _logout(BuildContext context) async {
+  await FirebaseAuth.instance.signOut();
+  context.go(AppRoutes.login);
 }

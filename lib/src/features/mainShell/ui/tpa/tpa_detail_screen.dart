@@ -13,7 +13,9 @@ class TpaDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TpaProvider>().fetchTpas();
+      final provider = context.read<TpaProvider>();
+      provider.fetchTpas();
+      provider.fetchCompanies(tpaId: tpaId);
     });
     return _TpaDetailView(tpaId: tpaId);
   }
@@ -29,6 +31,7 @@ class _TpaDetailView extends StatelessWidget {
 
     if (tpa == null) {
       return const Scaffold(
+        backgroundColor: Color(0xFFF8F9FA),
         body: Center(
           child: CircularProgressIndicator(color: Color(0xFF0B833D)),
         ),
