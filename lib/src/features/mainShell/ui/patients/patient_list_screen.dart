@@ -9,6 +9,20 @@ import 'package:provider/provider.dart';
 import '../../models/models.dart';
 
 
+// class PatientListScreen extends StatelessWidget {
+//   final String tpaId;
+//   final String companyId;
+//   const PatientListScreen({super.key, required this.tpaId, required this.companyId});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       context.read<TpaProvider>().fetchTpas();
+//       context.read<TpaProvider>().fetchCompanies(tpaId: tpaId);
+//     });
+//     return _PatientListView(tpaId: tpaId, companyId: companyId);
+//   }
+// }
 class PatientListScreen extends StatelessWidget {
   final String tpaId;
   final String companyId;
@@ -21,26 +35,13 @@ class PatientListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => PatientProvider()),
-        ChangeNotifierProvider(create: (_) => InsuranceProvider()),
-        ChangeNotifierProvider(create: (_) => TpaProvider()),
-      ],
-      child: Builder(
-        builder: (context) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.read<TpaProvider>().fetchTpas();
-            context.read<TpaProvider>().fetchCompanies(tpaId: tpaId);
-            // context.read<PatientProvider>().fetchPatients(companyId: companyId);
-          });
-
-          return _PatientListView(
-            tpaId: tpaId,
-            companyId: companyId,
-          );
-        },
-      ),
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TpaProvider>().fetchTpas();
+      context.read<TpaProvider>().fetchCompanies(tpaId: tpaId);
+    });
+    return ChangeNotifierProvider(
+      create: (_) => PatientProvider(),
+      child: _PatientListView(tpaId: tpaId, companyId: companyId),
     );
   }
 }
@@ -58,7 +59,7 @@ class _PatientListView extends StatelessWidget {
         Expanded(child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(child: _PatientContent(tpaId: tpaId, companyId: companyId)),
           Consumer<PatientProvider>(
-            builder: (_, p, __) => p.showAddPatient ? const _AddPatientForm() : const SizedBox.shrink(),
+            builder: (_, p, __) => p.showAddPatient ?  _AddPatientForm(tpaId: tpaId, companyId: companyId) : const SizedBox.shrink(),
           ),
         ])),
       ]),
@@ -67,6 +68,80 @@ class _PatientListView extends StatelessWidget {
 }
 
 // ── Top Bar ───────────────────────────────────────────────────────────────────
+// class _TopBar extends StatelessWidget {
+//   final String tpaId;
+//   final String companyId;
+//   const _TopBar({required this.tpaId, required this.companyId});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final tpaProvider = context.watch<TpaProvider>();
+//     final insProvider   = context.read<InsuranceProvider>();
+//     final patProvider   = context.read<PatientProvider>();
+//     final tpa = tpaProvider.tpaById(tpaId);
+//     final company       = tpaProvider.getCompanyById(companyId);
+//
+//     return Container(
+//       height: 60,
+//       padding: const EdgeInsets.symmetric(horizontal: 24),
+//       color: Colors.white,
+//       child: Row(children: [
+//         InkWell(
+//           onTap: () => context.go('/tpa/$tpaId'),
+//           child: Row(children: [
+//             const Icon(Icons.arrow_back_ios_rounded, size: 14, color: Color(0xFF0B833D)),
+//             const SizedBox(width: 4),
+//             Text(tpa?.name ?? '', style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF0B833D), fontWeight: FontWeight.w500)),
+//           ]),
+//         ),
+//         const SizedBox(width: 8),
+//         const Icon(Icons.chevron_right, size: 16, color: Color(0xFFADB5BD)),
+//         const SizedBox(width: 4),
+//         Expanded(
+//           child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+//             Text( '${tpa?.name ?? '...'} › ${company?.name ?? '...'}', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFADB5BD), fontWeight: FontWeight.w500)),
+//             Text('Daily Collections', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF212529))),
+//           ]),
+//         ),
+//         const Spacer(),
+//         Consumer<PatientProvider>(
+//           builder: (_, p, __) => InkWell(
+//             onTap: () async {
+//               final d = await showDatePicker(
+//                 context: context, initialDate: p.selectedDate,
+//                 firstDate: DateTime(2020), lastDate: DateTime.now(),
+//                 builder: (ctx, child) => Theme(data: ThemeData(colorSchemeSeed: const Color(0xFF0B833D)), child: child!),
+//               );
+//               if (d != null) patProvider.setDate(d);
+//             },
+//             child: Container(
+//               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+//               decoration: BoxDecoration(color: const Color(0xFFF8F9FA), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE9ECEF))),
+//               child: Row(children: [
+//                 const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF0B833D)),
+//                 const SizedBox(width: 8),
+//                 Text(_fmt(p.selectedDate), style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF212529))),
+//               ]),
+//             ),
+//           ),
+//         ),
+//         const SizedBox(width: 12),
+//         Consumer<PatientProvider>(
+//           builder: (_, p, __) => ElevatedButton.icon(
+//             onPressed: patProvider.toggleAddPatient,
+//             icon: Icon(p.showAddPatient ? Icons.close : Icons.person_add_rounded, size: 16),
+//             label: Text(p.showAddPatient ? 'Close' : 'Add Patient', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: const Color(0xFF0B833D), foregroundColor: Colors.white, elevation: 0,
+//               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+//             ),
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+// }
 class _TopBar extends StatelessWidget {
   final String tpaId;
   final String companyId;
@@ -74,11 +149,10 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tpaProvider   = context.read<TpaProvider>();
-    final insProvider   = context.read<InsuranceProvider>();
-    final patProvider   = context.read<PatientProvider>();
-    final tpa = tpaProvider.tpaById(tpaId);
-    final company       = tpaProvider.getCompanyById(companyId);
+    final tpaProvider = context.watch<TpaProvider>();
+    final patProvider = context.watch<PatientProvider>();
+    final tpa         = tpaProvider.tpaById(tpaId);
+    final company     = tpaProvider.getCompanyById(companyId);
 
     return Container(
       height: 60,
@@ -90,17 +164,23 @@ class _TopBar extends StatelessWidget {
           child: Row(children: [
             const Icon(Icons.arrow_back_ios_rounded, size: 14, color: Color(0xFF0B833D)),
             const SizedBox(width: 4),
-            Text(tpa?.name ?? '', style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF0B833D), fontWeight: FontWeight.w500)),
+            Text(tpa?.name ?? '...', style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF0B833D), fontWeight: FontWeight.w500)),
           ]),
         ),
         const SizedBox(width: 8),
         const Icon(Icons.chevron_right, size: 16, color: Color(0xFFADB5BD)),
         const SizedBox(width: 4),
-        Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${tpa?.name ?? ''} › ${company?.name ?? ''}', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFADB5BD), fontWeight: FontWeight.w500)),
-          Text('Daily Collections', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF212529))),
-        ]),
-        const Spacer(),
+        Expanded(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              '${tpa?.name ?? '...'} › ${company?.name ?? '...'}',
+              style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFADB5BD), fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text('Daily Collections', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF212529))),
+          ]),
+        ),
+        const SizedBox(width: 12),
         Consumer<PatientProvider>(
           builder: (_, p, __) => InkWell(
             onTap: () async {
@@ -284,7 +364,9 @@ class _PatientCollectionRow extends StatelessWidget {
 
 // ── Add Patient Form ──────────────────────────────────────────────────────────
 class _AddPatientForm extends StatefulWidget {
-  const _AddPatientForm();
+  final String tpaId;
+  final String companyId;
+  const _AddPatientForm({required this.tpaId, required this.companyId});
 
   @override
   State<_AddPatientForm> createState() => _AddPatientFormState();
@@ -414,17 +496,24 @@ class _AddPatientFormState extends State<_AddPatientForm> {
             SizedBox(width: double.infinity, child: ElevatedButton(
               onPressed: () {
                 if (_nameCtrl.text.isEmpty || _policyCtrl.text.isEmpty) return;
-                provider.addPatient(PatientModel(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  companyId: '',
-                  name: _nameCtrl.text,
-                  age: int.tryParse(_ageCtrl.text) ?? 0,
-                  gender: _gender,
-                  policyNo: _policyCtrl.text,
-                  cardNo: _cardCtrl.text,
-                  phone: _phoneCtrl.text,
-                  address: _addrCtrl.text,
-                ));
+                final tpaProvider = context.read<TpaProvider>();
+                final tpa     = tpaProvider.tpaById(widget.tpaId);
+                final company = tpaProvider.getCompanyById(widget.companyId);
+
+                provider.addPatient(
+                  companyId:   widget.companyId,
+                  companyName: company?.name ?? '',
+                  tpaId:       widget.tpaId,
+                  tpaName:     tpa?.name ?? '',
+                  name:        _nameCtrl.text,
+                  age:         int.tryParse(_ageCtrl.text) ?? 0,
+                  gender:      _gender,
+                  policyNo:    _policyCtrl.text,
+                  cardNo:      _cardCtrl.text,
+                  phone:       _phoneCtrl.text,
+                  address:     _addrCtrl.text,
+                  visitType:   _visitType
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0B833D), foregroundColor: Colors.white, elevation: 0,
@@ -459,10 +548,13 @@ class _SummaryCard extends StatelessWidget {
           child: Icon(icon, size: 18, color: color),
         ),
         const SizedBox(width: 10),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(value, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: const Color(0xFF212529))),
-          Text(label, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFADB5BD), fontWeight: FontWeight.w500)),
-        ]),
+        Expanded( // ← add Expanded here to prevent overflow
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(value, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: const Color(0xFF212529))),
+            Text(label, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFADB5BD), fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis), // ← ellipsis for long labels
+          ]),
+        ),
       ]),
     ));
   }

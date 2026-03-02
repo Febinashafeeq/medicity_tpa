@@ -306,27 +306,7 @@ class TpaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addPatient({
-    required String companyId,
-    required String name,
-    required int    age,
-    required String gender,
-    required String policyNo,
-    required String cardNo,
-    required String phone,
-    required String address,
-  }) {
-    _patients = [
-      ..._patients,
-      PatientModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        companyId: companyId, name: name, age: age, gender: gender,
-        policyNo: policyNo, cardNo: cardNo, phone: phone, address: address,
-      ),
-    ];
-    _showAddPatient = false;
-    notifyListeners();
-  }
+
 
   // ── Collection / Date / Filter Actions ───────────────────────────────────
   void setSelectedDate(DateTime date) {
