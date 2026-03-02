@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../features/mainShell/models/models.dart';
 
@@ -58,8 +59,55 @@ class PatientProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addPatient(PatientModel patient) {
-    _patients.add(patient);
+  Future<void> addPatient({
+    required String companyId,
+    required String companyName,
+    required String tpaId,
+    required String tpaName,
+    required String name,
+    required int    age,
+    required String gender,
+    required String policyNo,
+    required String cardNo,
+    required String phone,
+    required String address,
+    required String visitType,
+  }) async {
+    final String key = DateTime.now().microsecondsSinceEpoch.toString();
+
+    await FirebaseFirestore.instance.collection('patients').doc(key).set({
+      'id':          key,
+      'companyId':   companyId,
+      'companyName': companyName,
+      'tpaId':       tpaId,
+      'tpaName':     tpaName,
+      'name':        name,
+      'age':         age,
+      'gender':      gender,
+      'visitType':   visitType,
+      'policyNo':    policyNo,
+      'cardNo':      cardNo,
+      'phone':       phone,
+      'address':     address,
+      'createdAt':   FieldValue.serverTimestamp(),
+    });
+
+    _patients.insert(0, PatientModel(
+      id:          key,
+      companyId:   companyId,
+      companyName: companyName,
+      tpaId:       tpaId,
+      tpaName:     tpaName,
+      name:        name,
+      age:         age,
+      gender:      gender,
+      policyNo:    policyNo,
+      cardNo:      cardNo,
+      phone:       phone,
+      address:     address,
+      visitType:   visitType
+    ));
+
     _showAddPatient = false;
     notifyListeners();
   }
