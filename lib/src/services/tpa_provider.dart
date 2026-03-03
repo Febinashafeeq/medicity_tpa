@@ -212,21 +212,37 @@ class TpaProvider extends ChangeNotifier {
     required String contactPerson,
     required String phone,
   }) async {
+
     final String key = DateTime.now().microsecondsSinceEpoch.toString();
 
-    await FirebaseFirestore.instance.collection('companies').doc(key).set({
-      'id': key,
-      'tpaId': tpaId,
-      'name': name,
-      'policyType': policyType,
-      'empanelmentNo': empanelmentNo,
-      'contactPerson': contactPerson,
-      'phone': phone,
-      'isActive': true,
-      'patientCount': 0,
-      'createdAt': FieldValue.serverTimestamp(),
+    final firestore = FirebaseFirestore.instance;
+
+    final companyRef = firestore.collection('companies').doc(key);
+    final tpaRef     = firestore.collection('tpas').doc(tpaId);
+
+    await firestore.runTransaction((transaction) async {
+
+      // add company
+      transaction.set(companyRef, {
+        'id': key,
+        'tpaId': tpaId,
+        'name': name,
+        'policyType': policyType,
+        'empanelmentNo': empanelmentNo,
+        'contactPerson': contactPerson,
+        'phone': phone,
+        'isActive': true,
+        'patientCount': 0,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // increment company count
+      transaction.update(tpaRef, {
+        'companyCount': FieldValue.increment(1),
+      });
     });
 
+    // update local list
     _companies.insert(
       0,
       InsuranceCompanyModel(
