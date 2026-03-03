@@ -476,7 +476,7 @@ class _DesktopSidebar extends StatelessWidget {
       width: 240,
       color: AppColors.white,
       child: Column(children: [
-        _SidebarLogo(compact: false),
+        const _SidebarLogo(compact: false),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -510,7 +510,7 @@ class _TabletRail extends StatelessWidget {
       color: AppColors.white,
       child: Column(children: [
         // ── Logo icon ────────────────────────────────────────
-        _SidebarLogo(compact: true),
+        const _SidebarLogo(compact: true),
 
         // ── Hamburger to open full drawer ────────────────────
         Padding(
@@ -563,22 +563,24 @@ class _DrawerSidebar extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(16)),
       ),
-      child: Column(children: [
-        _SidebarLogo(compact: false),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: _NavItems(
-              location: location,
-              todayCollections: p.todayCollections,
-              pendingPayments: p.pendingPayments,
-              compact: false,
-              closeDrawerOnTap: true,
+      child: SafeArea(
+        child: Column(children: [
+          const _SidebarLogo(compact: false),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8,),
+              child: _NavItems(
+                location: location,
+                todayCollections: p.todayCollections,
+                pendingPayments: p.pendingPayments,
+                compact: false,
+                closeDrawerOnTap: true,
+              ),
             ),
           ),
-        ),
-        const _SidebarFooter(compact: false),
-      ]),
+          const _SidebarFooter(compact: false),
+        ]),
+      ),
     );
   }
 }

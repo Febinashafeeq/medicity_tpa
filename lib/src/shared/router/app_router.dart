@@ -17,6 +17,8 @@ import '../../features/mainShell/ui/payments/invoice_ledger_screen.dart';
 import '../../features/mainShell/ui/payments/payment_entry_screen.dart';
 import '../../features/mainShell/ui/payments/settlement_screen.dart';
 import '../../features/mainShell/ui/reports/reports_screen.dart';
+import '../../features/mainShell/ui/tpa/add_company_screen.dart';
+import '../../features/mainShell/ui/tpa/add_tpa_screen.dart';
 import '../../features/mainShell/ui/tpa/tpa_detail_screen.dart';
 import '../../features/mainShell/ui/tpa/tpa_list_screen.dart';
 import '../widgets/main_shell.dart';
@@ -33,6 +35,9 @@ class AppRoutes {
 
   // TPA
   static const tpaList      = '/tpa';
+  static const tpaAdd       = '/tpa/add';
+  static String tpaCompanyAdd(String tpaId) =>
+      '/tpa/$tpaId/companies/add';
 
   // Collections
   static const collectionList = '/collections';
@@ -108,86 +113,14 @@ final appRouter = GoRouter(
             child: const TpaListScreen(),
           ),
           routes: [
-            // GoRoute(
-            //   path: ':tpaId',
-            //   name: 'tpa-detail',
-            //   pageBuilder: (context, state) => _fadePage(
-            //     state: state,
-            //     child: TpaDetailScreen(
-            //       tpaId: state.pathParameters['tpaId']!,
-            //     ),
-            //   ),
-            //   routes: [
-            //
-            //     // Insurance Companies under TPA
-            //     GoRoute(
-            //       path: 'companies',
-            //       name: 'insurance-list',
-            //       pageBuilder: (context, state) => _fadePage(
-            //         state: state,
-            //         child: InsuranceListScreen(
-            //           tpaId: state.pathParameters['tpaId']!,
-            //         ),
-            //       ),
-            //       routes: [
-            //         GoRoute(
-            //           path: ':companyId',
-            //           name: 'insurance-detail',
-            //           pageBuilder: (context, state) => _fadePage(
-            //             state: state,
-            //             child: InsuranceDetailScreen(
-            //               tpaId:     state.pathParameters['tpaId']!,
-            //               companyId: state.pathParameters['companyId']!,
-            //             ),
-            //           ),
-            //           routes: [
-            //
-            //             // Patients under Insurance Company
-            //             GoRoute(
-            //               path: 'patients',
-            //               name: 'patient-list',
-            //               pageBuilder: (context, state) => _fadePage(
-            //                 state: state,
-            //                 child: PatientListScreen(
-            //                   tpaId:     state.pathParameters['tpaId']!,
-            //                   companyId: state.pathParameters['companyId']!,
-            //                 ),
-            //               ),
-            //               routes: [
-            //                 GoRoute(
-            //                   path: ':patientId',
-            //                   name: 'patient-detail',
-            //                   pageBuilder: (context, state) => _fadePage(
-            //                     state: state,
-            //                     child: PatientDetailScreen(
-            //                       tpaId:     state.pathParameters['tpaId']!,
-            //                       companyId: state.pathParameters['companyId']!,
-            //                       patientId: state.pathParameters['patientId']!,
-            //                     ),
-            //                   ),
-            //                 ),
-            //                 GoRoute(
-            //                   path: ':patientId/history',
-            //                   name: 'patient-history',
-            //                   pageBuilder: (context, state) => _fadePage(
-            //                     state: state,
-            //                     child: PatientHistoryScreen(
-            //                       tpaId:     state.pathParameters['tpaId']!,
-            //                       companyId: state.pathParameters['companyId']!,
-            //                       patientId: state.pathParameters['patientId']!,
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ],
-            //             ),
-            //
-            //           ],
-            //         ),
-            //       ],
-            //     ),
-            //
-            //   ],
-            // ),
+            GoRoute(
+              path: 'add',                   // resolves to /tpa/add
+              name: 'tpa-add',
+              pageBuilder: (context, state) => _slidePage(
+                state: state,
+                child: const AddTpaScreen(),
+              ),
+            ),
             GoRoute(
               path: ':tpaId',
               name: 'tpa-detail',
@@ -196,6 +129,16 @@ final appRouter = GoRouter(
                 child: TpaDetailScreen(tpaId: state.pathParameters['tpaId']!),
               ),
               routes: [
+                GoRoute(
+                  path: 'companies/add',     // resolves to /tpa/:tpaId/companies/add
+                  name: 'tpa-company-add',
+                  pageBuilder: (context, state) => _slidePage(
+                    state: state,
+                    child: AddCompanyScreen(
+                      tpaId: state.pathParameters['tpaId']!,
+                    ),
+                  ),
+                ),
                 GoRoute(
                   path: 'companies/:companyId/patients',
                   name: 'patient-list',
@@ -357,6 +300,29 @@ final appRouter = GoRouter(
   // ── 404 error page ─────────────────────────────────────────
   errorBuilder: (context, state) => _ErrorScreen(error: state.error),
 );
+
+CustomTransitionPage<void> _slidePage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 1),   // slides up from bottom — feels native
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        )),
+        child: child,
+      );
+    },
+  );
+}
 
 // ── Global Auth Redirect ─────────────────────────────────────────────────────
 String? _globalRedirect(BuildContext context, GoRouterState state) {
